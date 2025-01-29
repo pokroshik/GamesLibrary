@@ -2,9 +2,11 @@ package com.example.gameslibrary.Activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,8 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gameslibrary.MainActivity
 import com.example.gameslibrary.R
+import androidx.compose.ui.platform.LocalConfiguration
 
 class LoginActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +45,7 @@ class LoginActivity : BaseActivity() {
 
         setContent {
             LoginScreen (onLoginClick = {
-                startActivity(Intent(this,MainActivity::class.java))
+                startActivity(Intent(this, MainActivity::class.java))
             })
         }
     }
@@ -57,6 +59,7 @@ fun LoginScreenPreview() {
 
 @Composable
 fun LoginScreen(onLoginClick:()->Unit) {
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     Box(
         modifier = Modifier.fillMaxSize().background(Brush.radialGradient(
             colors = listOf(Color.Black, colorResource(R.color.red)),
@@ -64,9 +67,10 @@ fun LoginScreen(onLoginClick:()->Unit) {
         ))
     ) {
         Column (
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 16.dp)
+            verticalArrangement = Arrangement.spacedBy(screenHeight * 0.02f),
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = screenHeight * 0.03f, vertical = screenHeight * 0.03f)
         ){
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(screenHeight * 0.03f))
             Text(
                 text = "Log In",
                 style = TextStyle(
@@ -76,16 +80,14 @@ fun LoginScreen(onLoginClick:()->Unit) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(200.dp))
+            Spacer(modifier = Modifier.height(screenHeight * 0.1f))
             GradientTextField(
                 hint = "something@example.com",
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
             GradientTextField(
                 hint = "Enter your Password",
             )
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Forget your password?",
                 color = Color.White,
@@ -93,10 +95,18 @@ fun LoginScreen(onLoginClick:()->Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(220.dp))
-            GradientButton("Login", onLoginClick, )
-            Spacer(modifier = Modifier.height(16.dp))
-            GradientButton("Create account", onLoginClick,)
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier = Modifier.weight(1f)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(screenHeight * 0.02f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    GradientButton("Login", onLoginClick,)
+                    GradientButton("Create account", onLoginClick,)
+                }
+            }
         }
     }
 }
