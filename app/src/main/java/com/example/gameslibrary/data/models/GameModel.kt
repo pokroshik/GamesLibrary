@@ -1,4 +1,4 @@
-package com.example.gameslibrary.Domain
+package com.example.gameslibrary.data.models
 
 import com.google.firebase.Timestamp
 import java.io.Serializable

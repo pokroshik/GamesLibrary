@@ -18,6 +18,8 @@
     <color name="redIcon">#d90429</color>
     <color name="text">#EB6767</color>
     <color name="blueIcon">#2b2d42</color>
-    <color name="whiteText">#666161</color>
+    <color name="whiteText">#949496</color>
+    <color name="searchButton">#2a2a2a</color>
+    <color name="searchBackground">#1c1c1c</color> <!-- 312525 -->
 
 </resources>

@@ -1,11 +1,9 @@
-package com.example.gameslibrary.Repository
+package com.example.gameslibrary.repository
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.gameslibrary.Domain.GameModel
+import com.example.gameslibrary.data.models.GameModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 

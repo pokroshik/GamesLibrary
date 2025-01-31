@@ -1,4 +1,4 @@
-package com.example.gameslibrary.Activity
+package com.example.gameslibrary.ui.screens
 
 import android.os.Bundle
 import android.view.WindowManager
