@@ -61,19 +61,20 @@ fun MainScreen(navController: NavHostController, onItemClick: (GameModel) ->Unit
         content = {paddingValues ->
             Box(
                 modifier = Modifier.background(Color.Black).padding(
-                top = paddingValues.calculateTopPadding(),
+                    top = paddingValues.calculateTopPadding()
                 /*start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
                 end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
                 bottom = 0.dp*/
-            ).background(Color.Transparent).fillMaxSize()) {
-                Box(modifier = Modifier.clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)).background(
+                )
+            .background(Color.Transparent).fillMaxSize()) {
+                Box(modifier = Modifier.clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)).background(
                     colorResource(R.color.searchBackground)
                 )) {
                     NavHost(navController, startDestination = "game") { // search
                         composable("favorite") { FavoriteScreen() }
                         composable("search") { SearchScreen(navController) }
                         composable("profile") { ProfileScreen() }
-                            composable("game") { GameItemScreen()}
+                            composable("game") { GameItemScreen(paddingValues)}
                     }
                 }
             }
@@ -86,7 +87,7 @@ fun MainScreen(navController: NavHostController, onItemClick: (GameModel) ->Unit
 
 @Composable
 fun FavoriteScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize().padding(), contentAlignment = Alignment.Center) {
         Text(text = "Favorite Screen", fontSize = 24.sp)
     }
 }
