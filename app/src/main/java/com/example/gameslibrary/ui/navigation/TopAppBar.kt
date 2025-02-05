@@ -13,6 +13,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -27,11 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.gameslibrary.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppNavigation() {
+fun TopAppNavigation(navController: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     CenterAlignedTopAppBar(
@@ -41,7 +43,7 @@ fun TopAppNavigation() {
             titleContentColor = Color.White,
         ),
         title = {
-            Column (
+            /*Column (
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 Text(
@@ -61,23 +63,30 @@ fun TopAppNavigation() {
                     fontWeight = FontWeight.Bold,
                     color = colorResource(R.color.whiteText)
                 )
-            }
+            }*/
         },
         navigationIcon = {
-            IconButton(onClick = { /* do something */ }) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_close),
-                    contentDescription = "Localized description",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp).border(2.dp, Color.White, shape = RoundedCornerShape(6.dp)).padding(2.dp)
-                )
+            if (navController.previousBackStackEntry != null) {
+                IconButton(onClick = {
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_close),
+                        contentDescription = "Localized description",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                            .border(2.dp, Color.White, shape = RoundedCornerShape(6.dp))
+                            .padding(2.dp)
+                    )
+                }
             }
         },
         actions = {
             IconButton(onClick = { /* do something */ }) {
                 Icon(
-                    imageVector = Icons.Filled.Menu,
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_filter),
                     contentDescription = "Localized description",
+                    tint = colorResource(R.color.searchButton)
                 )
             }
         },

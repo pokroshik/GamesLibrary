@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.gms)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -47,6 +49,11 @@ android {
 }
 
 dependencies {
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
     implementation(libs.androidx.activity)
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("androidx.compose:compose-bom:2025.01.00")
@@ -90,5 +97,6 @@ dependencies {
 
     implementation ("com.google.android.gms:play-services-auth:20.0.1") // для аутентификации
     implementation ("com.google.android.gms:play-services-location:18.0.0")// для местоположения и других сервисов
+
 
 }

@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -41,6 +46,8 @@ import androidx.compose.ui.unit.sp
 import com.example.gameslibrary.R
 import androidx.compose.ui.platform.LocalConfiguration
 import com.example.gameslibrary.MainActivity
+import com.example.gameslibrary.ui.components.MyTextField
+import com.example.gameslibrary.ui.components.horizontalGradient
 
 class LoginActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,9 +67,15 @@ fun LoginScreenPreview() {
     LoginScreen (onLoginClick = {})
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onLoginClick:()->Unit) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
+    var filledText by remember {
+        mutableStateOf("")
+    }
+
     Box(
         modifier = Modifier.fillMaxSize().background(Brush.radialGradient(
             colors = listOf(Color.Black, colorResource(R.color.red)),
@@ -84,13 +97,39 @@ fun LoginScreen(onLoginClick:()->Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(screenHeight * 0.1f))
-            GradientTextField(
-                hint = "something@example.com",
-                modifier = Modifier.fillMaxWidth()
-            )
-            GradientTextField(
-                hint = "Enter your Password",
-            )
+
+            var emailText by remember {
+                mutableStateOf("")
+            }
+
+                OutlinedTextField(
+                    value = emailText,
+                    onValueChange = {emailText = it},
+                    placeholder = {
+                        Text(text = "something@example.com", color = Color.Gray, modifier = Modifier.fillMaxWidth(), fontSize = 16.sp)
+                    },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.White,
+                        fontSize = 16.sp
+                    ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedTextColor = Color.Transparent,
+                        unfocusedTextColor = Color.Transparent,
+                        cursorColor = Color.Transparent,
+                        focusedLabelColor = Color.Transparent,
+                        unfocusedLabelColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, horizontalGradient(), RoundedCornerShape(10.dp)).background(
+                        color = colorResource(R.color.black1),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                )
+
+                MyTextField("Enter your password")
+
             Text(
                 text = "Forget your password?",
                 color = Color.White,
@@ -135,49 +174,5 @@ fun GradientButton(
         )
     ) {
         Text(text=text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun GradientTextField(
-    hint:String,
-    modifier: Modifier=Modifier,
-    keyboardOptions: KeyboardOptions=KeyboardOptions.Default
-) {
-    Box(
-        modifier = modifier.height(55.dp).background(
-            brush = Brush.linearGradient(
-                colors = listOf(colorResource(R.color.blueIcon), colorResource(R.color.redIcon))
-            ),
-            shape = RoundedCornerShape(10.dp)
-        ).padding(1.dp)
-    ) {
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            placeholder = {
-                Text(text = hint, color = Color.Gray, modifier = Modifier.fillMaxWidth(), fontSize = 16.sp)
-            },
-            singleLine = true,
-            textStyle = TextStyle(
-                color = Color.White,
-                fontSize = 16.sp
-            ),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedTextColor = Color.Transparent,
-                unfocusedTextColor = Color.Transparent,
-                cursorColor = Color.Transparent,
-                focusedLabelColor = Color.Transparent,
-                unfocusedLabelColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(10.dp),
-            keyboardOptions = keyboardOptions,
-            modifier = Modifier.fillMaxWidth().background(
-                color = colorResource(R.color.black1),
-                shape = RoundedCornerShape(10.dp)
-            ).align(Alignment.Center)
-        )
     }
 }

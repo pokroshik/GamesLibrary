@@ -2,6 +2,8 @@ package com.example.gameslibrary
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,7 +34,9 @@ import com.example.gameslibrary.ui.navigation.TopAppNavigation
 import com.example.gameslibrary.ui.screens.GameItemScreen
 import com.example.gameslibrary.ui.screens.SearchScreen
 import com.google.firebase.Timestamp
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,39 +55,55 @@ fun PreviewMainScreen() {
     MainScreen(navController, onItemClick = {})
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(navController: NavHostController, onItemClick: (GameModel) ->Unit = {}) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
-    Scaffold(
-        topBar = {
-            TopAppNavigation()
-        },
-        content = {paddingValues ->
-            Box(
-                modifier = Modifier.background(Color.Black).padding(
-                    top = paddingValues.calculateTopPadding()
-                /*start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+    CompositionLocalProvider(
+        LocalOverscrollConfiguration provides null
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppNavigation(navController)
+            },
+            content = { paddingValues ->
+                Box(
+                    modifier = Modifier.background(Color.Black).padding(
+                        top = paddingValues.calculateTopPadding()
+                        /*start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
                 end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
                 bottom = 0.dp*/
-                )
-            .background(Color.Transparent).fillMaxSize()) {
-                Box(modifier = Modifier.clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)).background(
-                    colorResource(R.color.searchBackground)
-                )) {
-                    NavHost(navController, startDestination = "game") { // search
-                        composable("favorite") { FavoriteScreen() }
-                        composable("search") { SearchScreen(navController) }
-                        composable("profile") { ProfileScreen() }
-                            composable("game") { GameItemScreen(paddingValues)}
+                    )
+                        .background(Color.Transparent).fillMaxSize()
+                ) {
+                    Box(
+                        modifier = Modifier.clip(
+                            RoundedCornerShape(
+                                topStart = 26.dp,
+                                topEnd = 26.dp
+                            )
+                        ).background(
+                            colorResource(R.color.searchBackground)
+                        )
+                    ) {
+                        NavHost(navController, startDestination = "search") { // search
+                            composable("favorite") { FavoriteScreen() }
+                            composable("search") { SearchScreen(navController) }
+                            composable("profile") { ProfileScreen() }
+                            composable("game/{gameTitle}") { backStackEntry ->
+                                val gameTitle = backStackEntry.arguments?.getString("gameTitle") ?: ""
+                                GameItemScreen(paddingValues,gameTitle, navController )
+                            }
+                        }
                     }
                 }
+            },
+            bottomBar = {
+                BottomAppNavigation(navController)
             }
-        },
-        bottomBar = {
-            BottomAppNavigation(navController)
-        }
-    )
+        )
+    }
 }
 
 @Composable
