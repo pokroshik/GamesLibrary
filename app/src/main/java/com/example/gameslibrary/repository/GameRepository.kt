@@ -3,6 +3,8 @@ package com.example.gameslibrary.repository
 import android.util.Log
 import com.example.gameslibrary.data.models.GameModel
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.AggregateSource
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
@@ -16,7 +18,7 @@ class GameRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
 
-    fun getGamesPaged(limit: Long, lastGame: GameModel?): Flow<List<GameModel>> = callbackFlow {
+    fun loadGamesPaged(limit: Long, lastGame: GameModel?): Flow<List<GameModel>> = callbackFlow {
         var query = firestore.collection("games")
             .orderBy("release", Query.Direction.DESCENDING)
             .limit(limit)
@@ -40,7 +42,6 @@ class GameRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
 
-
     suspend fun loadGameByTitle(title: String): GameModel? {
         return try {
             val snapshot = firestore.collection("games")
@@ -53,6 +54,22 @@ class GameRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e("Firestore", "Ошибка при получении игры: ${e.message}")
             null
+        }
+    }
+
+    suspend fun loadGamesCount(genres: List<String> = emptyList()): Long {
+        return try {
+            var query: Query = firestore.collection("games").whereEqualTo("controller", true)
+
+            if (genres.isNotEmpty()) {
+                query = query.whereArrayContainsAny("Genre", genres)
+            }
+
+            val countSnapshot = query.count().get(AggregateSource.SERVER).await()
+            countSnapshot.count
+        } catch (e: Exception) {
+            Log.e("Firestore", "Ошибка при подсчёте игр: ${e.message}")
+            0L
         }
     }
 }

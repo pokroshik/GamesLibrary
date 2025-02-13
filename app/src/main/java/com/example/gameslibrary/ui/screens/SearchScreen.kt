@@ -47,7 +47,6 @@ fun SearchScreen(navController: NavController, viewModel: GameViewModel = hiltVi
             }
         }*/
 
-    Log.d("UI", "Отображаем игру: ")
     val games by viewModel.games.collectAsState()
     if (games.isEmpty()) {
         CircularProgressIndicator()
@@ -60,7 +59,6 @@ fun SearchScreen(navController: NavController, viewModel: GameViewModel = hiltVi
         ) {
             itemsIndexed(games) { index, game ->
                 GameItem(game, navController)
-                // 🔥 Когда доходим до конца списка – загружаем следующую страницу
                 if (index == games.lastIndex) {
                     viewModel.loadNextPage()
                 }

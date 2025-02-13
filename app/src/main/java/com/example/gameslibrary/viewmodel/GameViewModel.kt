@@ -27,13 +27,15 @@ class GameViewModel @Inject constructor(
     private var lastLoadedGame: GameModel? = null
     private var isLoading = false
 
+    private val _gameCount = MutableStateFlow(52L)
+    val gameCount: StateFlow<Long> = _gameCount.asStateFlow()
 
     fun loadNextPage(limit: Long = 10) {
         if (isLoading) return
 
         isLoading = true
         viewModelScope.launch {
-            repository.getGamesPaged(limit, lastLoadedGame).collect { newGames ->
+            repository.loadGamesPaged(limit, lastLoadedGame).collect { newGames ->
                 Log.d("ViewModel", "Получено игр: ${newGames.size}")
                 if (newGames.isNotEmpty()) {
                     lastLoadedGame = newGames.last()
@@ -44,10 +46,17 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun loadGameByTitle(title: String) {
+    fun getGameByTitle(title: String) {
         viewModelScope.launch {
             val game = repository.loadGameByTitle(title)
             _game.value = game
+        }
+    }
+
+    fun getGameCount(genres: List<String> = emptyList()) {
+        viewModelScope.launch {
+            val count = repository.loadGamesCount(genres)
+            _gameCount.value = count // Обновляем значение
         }
     }
 }

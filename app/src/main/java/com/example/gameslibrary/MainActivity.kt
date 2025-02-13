@@ -31,10 +31,12 @@ import com.example.gameslibrary.ui.screens.BaseActivity
 import com.example.gameslibrary.data.models.GameModel
 import com.example.gameslibrary.ui.navigation.BottomAppNavigation
 import com.example.gameslibrary.ui.navigation.TopAppNavigation
+import com.example.gameslibrary.ui.screens.FilterScreen
 import com.example.gameslibrary.ui.screens.GameItemScreen
 import com.example.gameslibrary.ui.screens.SearchScreen
 import com.google.firebase.Timestamp
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.logging.Filter
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
@@ -87,7 +89,8 @@ fun MainScreen(navController: NavHostController, onItemClick: (GameModel) ->Unit
                             colorResource(R.color.searchBackground)
                         )
                     ) {
-                        NavHost(navController, startDestination = "search") { // search
+                        NavHost(navController, startDestination = "filter") { // search
+                            composable("filter") { FilterScreen()}
                             composable("favorite") { FavoriteScreen() }
                             composable("search") { SearchScreen(navController) }
                             composable("profile") { ProfileScreen() }

@@ -16,23 +16,6 @@ data class GameModel(
     var release: Timestamp? = null,
     var require: MutableMap<String, Any> = mutableMapOf(),
     var stores: MutableMap<String, String> = mutableMapOf(),
-    var time: MutableMap<String, Double?> = mutableMapOf()
-):Serializable /*{
-
-    // Пустой конструктор для Firebase
-    constructor() : this(
-        Developer = "",
-        Genre = ArrayList(),
-        Metacritic = ArrayList(),
-        Title = "",
-        about = "",
-        controller = true,
-        disk = "",
-        platforms = ArrayList(),
-        poster = "",
-        release = 0L,
-        require = mutableMapOf(),
-        stores = mutableMapOf(),
-        time = mutableMapOf()
-    )
-}*/
+    var time: MutableMap<String, Double?> = mutableMapOf(),
+    var images: ArrayList<String> = ArrayList()
+):Serializable

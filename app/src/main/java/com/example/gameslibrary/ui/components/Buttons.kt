@@ -68,12 +68,13 @@ fun TextButton(
     hPadding: Dp = 10.dp,
     vPadding: Dp = 4.dp,
     shapeDp: Dp = 16.dp,
+    color: Color = colorResource(R.color.searchButton),
     content: @Composable RowScope.() -> Unit,
 ) {
     Box(
         modifier = Modifier
             .background(
-                color = colorResource(R.color.searchButton),
+                color = color,
                 shape = RoundedCornerShape(shapeDp)
             )
             .padding(horizontal = hPadding, vertical = vPadding)

@@ -98,5 +98,5 @@ dependencies {
     implementation ("com.google.android.gms:play-services-auth:20.0.1") // для аутентификации
     implementation ("com.google.android.gms:play-services-location:18.0.0")// для местоположения и других сервисов
 
-
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
 }

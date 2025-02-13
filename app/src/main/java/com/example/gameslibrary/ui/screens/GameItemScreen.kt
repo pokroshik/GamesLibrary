@@ -1,5 +1,7 @@
 package com.example.gameslibrary.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -25,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -76,6 +79,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
@@ -110,7 +114,7 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
     val game1 by viewModel.game.collectAsState()
 
     LaunchedEffect(title) {
-        viewModel.loadGameByTitle(title)
+        viewModel.getGameByTitle(title)
     }
 
     if (game1 == null) {
@@ -353,7 +357,7 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(5) { index ->
+                        itemsIndexed(game.images) { index, image ->
                             Card(
                                 colors = CardDefaults.cardColors(
                                     containerColor = colorResource(R.color.searchBackground)
@@ -364,9 +368,9 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                                 shape = MaterialTheme.shapes.medium,
                                 elevation = CardDefaults.cardElevation(8.dp)
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.stray),
-                                    contentDescription = "Image $index",
+                                AsyncImage(
+                                    model = image,
+                                    contentDescription = null,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
@@ -580,6 +584,8 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                                 }
                             }
                         }
+                        val context = LocalContext.current
+
                         Spacer(Modifier.height(10.dp))
                         Text(
                             text = "Магазины",
@@ -596,8 +602,8 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                                 contentPadding = PaddingValues(horizontal = 10.dp),
                                 shape = RoundedCornerShape(10.dp),
                                 onClick = {
-                                    //*val url = gameShops[shop]
-                                    // url?.let { openUrl(it) } // openUrl — это псевдокод для открытия ссылки*//*
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(game.stores.get(shop)))
+                                    context.startActivity(intent)
                                 }) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
