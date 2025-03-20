@@ -18,6 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -32,6 +35,7 @@ fun SliderWithText(
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChange: (Float) -> Unit
 ) {
+    val gl = horizontalGradient()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -44,14 +48,18 @@ fun SliderWithText(
             modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
                 thumbColor = Color.Transparent, // Прозрачный цвет стандартного thumb
-                activeTrackColor = Color.Green
+                activeTrackColor = Color.Red.copy(alpha = 0.5f),
+                inactiveTrackColor = Color.Gray.copy(alpha = 0.3f),
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent,
             ),
             thumb = {
                 Box(
                     modifier = Modifier
                         .size(30.dp) // Размер кастомного ползунка
                         .clip(CircleShape)
-                        .background(Color.Green),
+                        .background(gl)
+                        .border(2.dp, Color.White, shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

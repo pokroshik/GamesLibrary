@@ -1,5 +1,6 @@
 package com.example.gameslibrary.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
@@ -35,6 +36,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -46,26 +48,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.gameslibrary.R
 import com.example.gameslibrary.ui.components.CustomRangeSlider
+import com.example.gameslibrary.ui.components.GradientButton
 import com.example.gameslibrary.ui.components.MyIcon
 import com.example.gameslibrary.ui.components.SliderWithText
+import com.example.gameslibrary.viewmodel.AuthViewModel
 import com.example.gameslibrary.viewmodel.GameViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun FilterScreen(
-   // viewModel: GameViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: GameViewModel = hiltViewModel()
 ) {
-   // val gameCount by viewModel.gameCount.collectAsState()
-
+    val gameCount by viewModel.gameCount.collectAsState()
     var showGenres by remember { mutableStateOf(false) }
-    var selectedGenres by remember { mutableStateOf(listOf<String>()) }
+    val selGenres by viewModel.selectedGenres.collectAsState()
+    var selectedGenres = selGenres
+    val checkedBy by viewModel.controllerSupport.collectAsState()
+    var checked = checkedBy
+
     val genres = listOf(
         "Атмосферная",
         "Будущее",
@@ -102,7 +112,7 @@ fun FilterScreen(
         "Шутер"
     )
 
-    var showPlatforms by remember { mutableStateOf(false) }
+   /* var showPlatforms by remember { mutableStateOf(false) }
     var selectedPlatforms by remember { mutableStateOf(listOf<String>()) }
     val platforms = mapOf(
         "Mac" to R.drawable.ic_platform_apple,
@@ -111,7 +121,7 @@ fun FilterScreen(
         "Playstation" to R.drawable.ic_platform_playstation,
         "Windows" to R.drawable.ic_platform_windows,
         "Xbox" to R.drawable.ic_platform_xbox,
-    )
+    )*/
 
     Column (
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -128,8 +138,9 @@ fun FilterScreen(
             color = colorResource(R.color.whiteText),
             fontSize = 16.sp
         )
-        var selectedIndex by remember { mutableStateOf(0) }
-        val options = listOf("Рейтингу", "Дате", "Названию")
+        val sel by viewModel.sortType.collectAsState()
+        var selectedIndex by remember { mutableStateOf(if (sel) 0 else 1) }
+        val options = listOf("Дате", "Названию")
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
@@ -157,7 +168,7 @@ fun FilterScreen(
             }
         }
 
-        var startValue by remember { mutableStateOf(0f) }
+/*        var startValue by remember { mutableStateOf(0f) }
         var endValue by remember { mutableStateOf(10f) }
 
         Spacer(Modifier.height(6.dp))
@@ -174,7 +185,7 @@ fun FilterScreen(
                 startValue = start
                 endValue = end
             }
-        )
+        )*/
 
         Spacer(Modifier.height(6.dp))
         Row(
@@ -197,7 +208,7 @@ fun FilterScreen(
                 fontSize = 16.sp
             )
         }
-/*        FlowRow(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -211,16 +222,15 @@ fun FilterScreen(
                         } else {
                             selectedGenres + genre
                         }
-                        viewModel.getGameCount(selectedGenres)
+                        viewModel.getGameCount(selectedGenres, checked)
                     },
                     label = { Text(genre) }
                 )
             }
-        }*/
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        var checked by remember { mutableStateOf(false) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -236,7 +246,7 @@ fun FilterScreen(
                 checked = checked,
                 onCheckedChange = {
                     checked = it
-
+                    viewModel.getGameCount(selectedGenres, it)
                 },
                 colors = SwitchDefaults.colors(
                     checkedTrackColor = Color.Red.copy(alpha = 0.6f)
@@ -246,11 +256,21 @@ fun FilterScreen(
 
 
         Spacer(Modifier.height(20.dp))
-        Text(
-            text = "Показать ",//$gameCount игры",
-            fontWeight = FontWeight.Bold,
-            color = colorResource(R.color.whiteText),
-            fontSize = 16.sp
+        var showGames = "Игр нет"
+        if (gameCount > 0) {
+            showGames = "Показать $gameCount игры"
+        }
+
+        GradientButton(
+            showGames,
+            gameCount > 0,
+            {
+                viewModel.confirmFilter(selectedGenres, checked, selectedIndex)
+                navController.popBackStack()
+            },
+            16.sp,
+            colorResource(R.color.whiteText),
+            FontWeight.Normal
         )
         Spacer(Modifier.height(50.dp))
     }

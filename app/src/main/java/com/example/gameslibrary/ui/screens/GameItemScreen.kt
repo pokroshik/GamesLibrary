@@ -2,11 +2,12 @@ package com.example.gameslibrary.ui.screens
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.Canvas
+import android.widget.Space
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,22 +16,21 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -39,22 +39,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetProperties
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,68 +58,79 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.gameslibrary.R
-import com.example.gameslibrary.data.models.GameModel
 import com.example.gameslibrary.ui.components.CrossedIcon
+import com.example.gameslibrary.ui.components.GradientButton
 import com.example.gameslibrary.ui.components.GradientIcon
+import com.example.gameslibrary.ui.components.GradientIconVector
 import com.example.gameslibrary.ui.components.MyDivider
 import com.example.gameslibrary.ui.components.MyIcon
+import com.example.gameslibrary.ui.components.ReviewItem
+import com.example.gameslibrary.ui.components.SliderWithText
 import com.example.gameslibrary.ui.components.TextButton
 import com.example.gameslibrary.ui.components.horizontalGradient
-import com.example.gameslibrary.ui.navigation.TopAppNavigation
+import com.example.gameslibrary.viewmodel.AuthViewModel
 import com.example.gameslibrary.viewmodel.GameViewModel
-import com.google.android.material.tabs.TabItem
-import com.google.firebase.Timestamp
-import kotlinx.coroutines.flow.Flow
+import com.example.gameslibrary.viewmodel.TopBarViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun GameItemScreen(pv: PaddingValues, title: String, navController: NavController, viewModel: GameViewModel = hiltViewModel()) {
+fun GameItemScreen(pv: PaddingValues, title: String, navController: NavController, viewModel: GameViewModel = hiltViewModel(), authModel: AuthViewModel = hiltViewModel(), topBarViewModel: TopBarViewModel = hiltViewModel()) {
     val game1 by viewModel.game.collectAsState()
+    val reviews1 by viewModel.reviews.collectAsState()
+    val uid = authModel.getUserUid() ?: "no"
+    val name = authModel.mainUser.value?.firstName ?: "no"
+    var showSecondSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(title) {
-        viewModel.getGameByTitle(title)
+        viewModel.getGameByTitle(title, uid)
+        topBarViewModel.title.value = title
     }
-
+    LaunchedEffect(game1) {
+        game1?.let { game ->
+            topBarViewModel.subtitle.value = game.Developer
+        }
+    }
     if (game1 == null) {
         CircularProgressIndicator()
     } else {
         val game = game1
         game?.let {
+            val averageRating = reviews1
+                .mapNotNull { it.rating }
+                .takeIf { it.isNotEmpty() }
+                ?.average()
+                ?: "TBD"
 
             val reviews = listOf(
-                "2" to R.drawable.circle,
+                averageRating.toString() to R.drawable.circle,
                 game.Metacritic.get("metascore").toString() to R.drawable.ic_colored_metacritic,
                 game.Metacritic.get("user score").toString() to R.drawable.ic_userscore,
             )
@@ -150,7 +156,6 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                 timeS1 to R.drawable.ic_trophy,
             )
 
-            val screenHeight = LocalConfiguration.current.screenHeightDp.dp
             val screenWidth = LocalConfiguration.current.screenWidthDp.dp
             val gradientBrush = Brush.horizontalGradient(
                 listOf(colorResource(R.color.redIcon), colorResource(R.color.blueIcon))
@@ -294,23 +299,29 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        Button(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(R.color.searchButton),
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier.weight(1f),
-                            onClick = {}
-                        ) {
-                            GradientIcon(24.dp, R.drawable.ic_filled_bookmark)
+                        if (!game.isPlayed) {
+                            Button(
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(R.color.searchButton),
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.changeGameWishlist(game.documentId, uid) }
+                            ) {
 
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                text = "Поиграю",
-                                fontSize = 15.sp,
-                                color = Color.White
-                            )
+                                if (game.isWish) GradientIcon(
+                                    24.dp,
+                                    R.drawable.ic_filled_bookmark
+                                ) else MyIcon(24.dp, R.drawable.ic_outlined_bookmark)
+
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = "Поиграю",
+                                    fontSize = 15.sp,
+                                    color = Color.White
+                                )
+                            }
                         }
                         if (game.disk != null) {
                             Button(
@@ -320,12 +331,16 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                                     contentColor = Color.White
                                 ),
                                 modifier = Modifier.weight(1f),
-                                onClick = {}
+                                onClick = { showSecondSheet = true }
                             ) {
-                                Icon(
-                                    imageVector = Icons.TwoTone.Star,
-                                    contentDescription = null,
-                                )
+                                if (game.isPlayed)
+                                    GradientIconVector(24.dp, Icons.TwoTone.Star)
+                                else {
+                                    Icon(
+                                        imageVector = Icons.TwoTone.Star,
+                                        contentDescription = null,
+                                    )
+                                }
                                 Spacer(Modifier.width(4.dp))
                                 Text(
                                     text = "Играл",
@@ -485,7 +500,10 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                             fontWeight = FontWeight.Bold
                         )
                         TextButton(vPadding = 6.dp, hPadding = 10.dp, shapeDp = 10.dp) {
-                            CrossedIcon(2.dp, 24.dp, R.drawable.ic_controller)
+                            if (game.controller ?: false) MyIcon(
+                                24.dp,
+                                R.drawable.ic_controller
+                            ) else CrossedIcon(2.dp, 24.dp, R.drawable.ic_controller)
                         }
 
                         Spacer(Modifier.height(15.dp))
@@ -602,7 +620,8 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                                 contentPadding = PaddingValues(horizontal = 10.dp),
                                 shape = RoundedCornerShape(10.dp),
                                 onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(game.stores.get(shop)))
+                                    val intent =
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(game.stores.get(shop)))
                                     context.startActivity(intent)
                                 }) {
                                 Row(
@@ -621,9 +640,104 @@ fun GameItemScreen(pv: PaddingValues, title: String, navController: NavControlle
                             }
                         }
                     }
+
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = "Отзывы",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    if (reviews1.isEmpty()) {
+                        Box(
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text(
+                                text = "Отзывов пока нет",
+                                color = colorResource(R.color.whiteText),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                    reviews1.forEach { review ->
+                        ReviewItem(review, navController, topBarViewModel)
+                    }
                     Spacer(Modifier.height(40.dp))
                 }
             }
+
+            //Review
+            var selectedRating by remember { mutableStateOf(5f) }
+
+            if (showSecondSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showSecondSheet = false },
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = colorResource(R.color.searchBackground)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "Добавить отзыв",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        SliderWithText(
+                            value = selectedRating,
+                            valueRange = 1f..10f,
+                            onValueChange = { newValue ->
+                                selectedRating = newValue
+                            }
+                        )
+                        var review by remember { mutableStateOf("sd") }
+                        TextField(
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = colorResource(R.color.searchButton),
+                                focusedLabelColor = Color.Red.copy(alpha = 0.5f),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedLabelColor = Color.Red.copy(alpha = 0.5f),
+                                cursorColor = Color.Red.copy(alpha = 0.5f),
+                            ),
+                            value = review,
+                            onValueChange = { review = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 200.dp, max = 250.dp)
+                                .verticalScroll(rememberScrollState()),
+                            textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
+                            maxLines = 10,
+                            label = { Text("Ваш отзыв (более 10 символов)") },
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        GradientButton(
+                            "Отправить",
+                            enabled = review.length > 10 || review.length == 0,
+                            {
+                                viewModel.changeReview(
+                                    game.documentId,
+                                    uid,
+                                    name,
+                                    review,
+                                    selectedRating.toInt()
+                                )
+                                review = ""
+                                viewModel.loadReview(game.documentId)
+                                showSecondSheet = false
+                            }
+                        )
+                    }
+                }
+            }
         }
+    }
 }
-}
+
+

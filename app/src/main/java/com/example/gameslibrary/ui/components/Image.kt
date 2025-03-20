@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Star
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -49,10 +51,35 @@ fun GradientIcon(
 }
 
 @Composable
+fun GradientIconVector(
+    size: Dp,
+    vector: ImageVector,
+    gradientBrush: Brush = Brush.horizontalGradient(
+        listOf(colorResource(R.color.redIcon), colorResource(R.color.blueIcon))
+    )
+) {
+
+    MyIconVector(size = size,
+        vector = vector,
+        modifier = Modifier.graphicsLayer(alpha = 0.99f)
+            .drawWithCache {
+                onDrawWithContent {
+                    drawContent()
+                    drawRect(
+                        brush = gradientBrush,
+                        blendMode = BlendMode.SrcAtop
+                    )
+                }
+            }
+    )
+
+}
+
+@Composable
 fun CrossedIcon(
     thickness: Dp = 1.dp,
     sizeDp: Dp,
-    drawableRes: Int,
+    drawableRes: Int = 0,
 ) {
     val density = LocalDensity.current.density
     val gradientBrush = horizontalGradient()
@@ -86,6 +113,21 @@ fun MyIcon(
 ) {
     Icon(
         painter = painterResource(id = drawableRes),
+        contentDescription = null,
+        modifier = modifier.size(size),
+        tint =  color,
+    )
+}
+
+@Composable
+fun MyIconVector(
+    size: Dp,
+    vector: ImageVector,
+    color: Color = Color.White,
+    modifier: Modifier = Modifier,
+) {
+    Icon(
+        imageVector = vector,
         contentDescription = null,
         modifier = modifier.size(size),
         tint =  color,

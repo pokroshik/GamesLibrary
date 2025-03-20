@@ -27,13 +27,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import com.example.gameslibrary.R
+import com.example.gameslibrary.viewmodel.TopBarViewModel
 
 @Composable
-fun BottomAppNavigation(navController: NavController) {
+fun BottomAppNavigation(navController: NavController, topBarViewModel: TopBarViewModel) {
     val currentRoute =
-        navController.currentBackStackEntryAsState().value?.destination?.route
+        navController.currentBackStackEntryAsState().value?.destination?.route?: "search"
 
-    if (currentRoute != "game") {
+    if (currentRoute in listOf("favorite", "profile", "search")) {
         val gradientBrush = Brush.linearGradient(
             colors = listOf(colorResource(R.color.redIcon), colorResource(R.color.blueIcon))
         )
@@ -99,6 +100,9 @@ fun BottomAppNavigation(navController: NavController) {
                         },
                         selected = selected,
                         onClick = {
+                            if (item.route == "profile") {
+                                topBarViewModel.changeUid("0")
+                            }
                             navController.navigate(item.route) {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
                                 launchSingleTop = true

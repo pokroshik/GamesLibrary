@@ -2,6 +2,7 @@ package com.example.gameslibrary
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
@@ -13,6 +14,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,6 +24,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -31,22 +35,33 @@ import com.example.gameslibrary.ui.screens.BaseActivity
 import com.example.gameslibrary.data.models.GameModel
 import com.example.gameslibrary.ui.navigation.BottomAppNavigation
 import com.example.gameslibrary.ui.navigation.TopAppNavigation
+import com.example.gameslibrary.ui.screens.FavoriteScreen
 import com.example.gameslibrary.ui.screens.FilterScreen
 import com.example.gameslibrary.ui.screens.GameItemScreen
+import com.example.gameslibrary.ui.screens.ProfileScreen
 import com.example.gameslibrary.ui.screens.SearchScreen
+import com.example.gameslibrary.viewmodel.AuthViewModel
+import com.example.gameslibrary.viewmodel.GameViewModel
+import com.example.gameslibrary.viewmodel.TopBarViewModel
 import com.google.firebase.Timestamp
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.logging.Filter
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
+    private val authViewModel: AuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        authViewModel.updateLoginTime(false)
         setContent {
             val navController = rememberNavController()
             MainScreen(navController)
         }
+    }
+    override fun onStop() {
+        super.onStop()
+        authViewModel.updateLoginTime(true)
     }
 }
 
@@ -60,14 +75,17 @@ fun PreviewMainScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(navController: NavHostController, onItemClick: (GameModel) ->Unit = {}) {
-    val currentRoute =
-        navController.currentBackStackEntryAsState().value?.destination?.route
+    val topBarViewModel: TopBarViewModel = hiltViewModel()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val gameViewModel: GameViewModel = hiltViewModel()
+    topBarViewModel.setUser(authViewModel.getUserUid()!!)
+    authViewModel.loadMainUser()
     CompositionLocalProvider(
         LocalOverscrollConfiguration provides null
     ) {
         Scaffold(
             topBar = {
-                TopAppNavigation(navController)
+                TopAppNavigation(navController, topBarViewModel, gameViewModel)
             },
             content = { paddingValues ->
                 Box(
@@ -89,41 +107,27 @@ fun MainScreen(navController: NavHostController, onItemClick: (GameModel) ->Unit
                             colorResource(R.color.searchBackground)
                         )
                     ) {
-                        NavHost(navController, startDestination = "filter") { // search
-                            composable("filter") { FilterScreen()}
-                            composable("favorite") { FavoriteScreen() }
-                            composable("search") { SearchScreen(navController) }
-                            composable("profile") { ProfileScreen() }
+                        NavHost(navController, startDestination = "search") { // search
+                            composable("filter") { FilterScreen(navController,gameViewModel)}
+                            composable("favorite") { FavoriteScreen(navController,authViewModel, topBarViewModel) }
+                            composable("search") { SearchScreen(navController, gameViewModel) }
+                            composable("profile") { ProfileScreen(navController,topBarViewModel, authViewModel) }
+                            composable("profile1") { ProfileScreen(navController,topBarViewModel, authViewModel) }
                             composable("game/{gameTitle}") { backStackEntry ->
                                 val gameTitle = backStackEntry.arguments?.getString("gameTitle") ?: ""
-                                GameItemScreen(paddingValues,gameTitle, navController )
+                                GameItemScreen(paddingValues,gameTitle, navController, authModel = authViewModel, topBarViewModel = topBarViewModel)
                             }
                         }
                     }
                 }
             },
             bottomBar = {
-                BottomAppNavigation(navController)
+                BottomAppNavigation(navController, topBarViewModel)
             }
         )
     }
 }
 
-@Composable
-fun FavoriteScreen() {
-    Box(modifier = Modifier.fillMaxSize().padding(), contentAlignment = Alignment.Center) {
-        Text(text = "Favorite Screen", fontSize = 24.sp)
-    }
-}
-
-
-
-@Composable
-fun ProfileScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Profile Screen", fontSize = 24.sp)
-    }
-}
 
 fun getGames(): List<GameModel> {
     return listOf(

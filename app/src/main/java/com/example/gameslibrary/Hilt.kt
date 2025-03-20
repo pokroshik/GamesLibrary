@@ -1,6 +1,7 @@
 package com.example.gameslibrary
 
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import dagger.Module
@@ -15,5 +16,10 @@ object Hilt {
     @Provides
     fun provideFirestore(): FirebaseFirestore {
         return Firebase.firestore  // Возвращаем синглтон для FirebaseFirestore
+    }
+
+    @Provides
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()  // FirebaseAuth
     }
 }
